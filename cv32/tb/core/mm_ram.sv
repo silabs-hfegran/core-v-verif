@@ -658,7 +658,6 @@ module mm_ram
     ram_data_we      = data_we_dec;
     ram_data_be      = data_be_dec;
 
-`ifndef VERILATOR
     if(rnd_stall_regs[RND_STALL_INSTR_EN]) begin
         ram_instr_req    = rnd_stall_instr_req;
         ram_instr_gnt    = rnd_stall_instr_gnt;
@@ -667,11 +666,9 @@ module mm_ram
         ram_data_req     = rnd_stall_data_req;
         ram_data_gnt     = rnd_stall_data_gnt;
     end
-`endif
   end
 
-`ifndef VERILATOR
-  riscv_random_stall
+  riscv_gnt_stall
   #(
     .DATA_WIDTH     (INSTR_RDATA_WIDTH),
     .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH   )
@@ -687,12 +684,13 @@ module mm_ram
     .req_core_i         ( instr_req_i            ),
     .req_mem_o          ( rnd_stall_instr_req    ),
 
+    .en_stall_i         ( rnd_stall_regs[RND_STALL_INSTR_EN]   ),
     .stall_mode_i       ( rnd_stall_regs[RND_STALL_INSTR_MODE] ),
     .max_stall_i        ( rnd_stall_regs[RND_STALL_INSTR_MAX]  ),
     .gnt_stall_i        ( rnd_stall_regs[RND_STALL_INSTR_GNT]  )
     );
 
-  riscv_random_stall
+  riscv_gnt_stall
   #(
     .DATA_WIDTH     (DATA_RDATA_WIDTH),
     .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH  )
@@ -708,11 +706,13 @@ module mm_ram
     .req_core_i         ( data_req_i             ),
     .req_mem_o          ( rnd_stall_data_req     ),
 
+    .en_stall_i         ( rnd_stall_regs[RND_STALL_DATA_EN]  ),
     .stall_mode_i       ( rnd_stall_regs[RND_STALL_DATA_MODE]),
     .max_stall_i        ( rnd_stall_regs[RND_STALL_DATA_MAX] ),
     .gnt_stall_i        ( rnd_stall_regs[RND_STALL_DATA_GNT] )
     );
 
+`ifndef VERILATOR
     riscv_random_interrupt_generator
     random_interrupt_generator_i
     (
@@ -734,7 +734,6 @@ module mm_ram
       .irq_pc_id_i       ( pc_core_id_i                                 ),
       .irq_pc_trig_i     ( rnd_stall_regs[13]                           )
     );
-
 `endif
 
 endmodule // ram
