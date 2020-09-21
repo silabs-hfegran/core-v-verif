@@ -164,13 +164,15 @@ module mm_ram
             rnd_stall_regs[i] = 0;
         end
 `ifndef VERILATOR
-        if ($test$plusargs("rand_stall_obi")) begin
+        if ($test$plusargs("rand_stall_obi_instr")) begin
             rnd_stall_regs[RND_STALL_INSTR_EN]    = 1;
             rnd_stall_regs[RND_STALL_INSTR_MODE]  = $urandom_range(2,1);
-            rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(2,0);
-            rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(2,0);
+            rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(3,0);
+            rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(3,0);
             rnd_stall_regs[RND_STALL_INSTR_MAX]   = $urandom_range(3,0);
+        end
 
+        if ($test$plusargs("rand_stall_obi_data")) begin
             rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
             rnd_stall_regs[RND_STALL_DATA_MODE]   = $urandom_range(2,1);
             rnd_stall_regs[RND_STALL_DATA_GNT]    = $urandom_range(2,0);
@@ -598,6 +600,7 @@ module mm_ram
         .rdata_i    ( ram_instr_rdata ),
         .rdata_o    ( instr_rdata_o   ),
         .rvalid_o   ( instr_rvalid_o  ),
+        .en_stall_i   ( rnd_stall_regs[RND_STALL_INSTR_EN][0]),
         .stall_mode_i ( rnd_stall_regs[RND_STALL_INSTR_MODE] ),
         .max_stall_i  ( rnd_stall_regs[RND_STALL_INSTR_MAX]  ),
         .valid_stall_i( rnd_stall_regs[RND_STALL_INSTR_VALID]));
@@ -611,6 +614,7 @@ module mm_ram
         .rdata_i    ( data_rdata_mux  ),
         .rdata_o    ( data_rdata_o    ),
         .rvalid_o   ( data_rvalid_o   ),
+        .en_stall_i   ( rnd_stall_regs[RND_STALL_DATA_EN][0]),
         .stall_mode_i ( rnd_stall_regs[RND_STALL_DATA_MODE] ),
         .max_stall_i  ( rnd_stall_regs[RND_STALL_DATA_MAX]  ),
         .valid_stall_i( rnd_stall_regs[RND_STALL_DATA_VALID]));
@@ -684,7 +688,7 @@ module mm_ram
     .req_core_i         ( instr_req_i            ),
     .req_mem_o          ( rnd_stall_instr_req    ),
 
-    .en_stall_i         ( rnd_stall_regs[RND_STALL_INSTR_EN]   ),
+    .en_stall_i         ( rnd_stall_regs[RND_STALL_INSTR_EN][0]),
     .stall_mode_i       ( rnd_stall_regs[RND_STALL_INSTR_MODE] ),
     .max_stall_i        ( rnd_stall_regs[RND_STALL_INSTR_MAX]  ),
     .gnt_stall_i        ( rnd_stall_regs[RND_STALL_INSTR_GNT]  )
@@ -706,10 +710,10 @@ module mm_ram
     .req_core_i         ( data_req_i             ),
     .req_mem_o          ( rnd_stall_data_req     ),
 
-    .en_stall_i         ( rnd_stall_regs[RND_STALL_DATA_EN]  ),
-    .stall_mode_i       ( rnd_stall_regs[RND_STALL_DATA_MODE]),
-    .max_stall_i        ( rnd_stall_regs[RND_STALL_DATA_MAX] ),
-    .gnt_stall_i        ( rnd_stall_regs[RND_STALL_DATA_GNT] )
+    .en_stall_i         ( rnd_stall_regs[RND_STALL_DATA_EN][0]),
+    .stall_mode_i       ( rnd_stall_regs[RND_STALL_DATA_MODE] ),
+    .max_stall_i        ( rnd_stall_regs[RND_STALL_DATA_MAX]  ),
+    .gnt_stall_i        ( rnd_stall_regs[RND_STALL_DATA_GNT]  )
     );
 
 `ifndef VERILATOR
