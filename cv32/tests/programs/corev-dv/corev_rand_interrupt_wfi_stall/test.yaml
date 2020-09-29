@@ -1,0 +1,8 @@
+name: corev_rand_interrupt_wfi_stall_<RUN_INDEX>
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    Random interrupt generator test with WFI and random stalls
+plusargs: >
+    +gen_irq_noise
+    +rand_stall_obi_data
+    +rand_stall_obi_instr
