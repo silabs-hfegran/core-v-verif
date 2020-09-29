@@ -57,7 +57,7 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 
 `include "uvm_macros.svh"
 `define CV32E40P_CORE   $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i
-`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_strichmo_i
+`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
 
 `define CV32E40P_ISS $root.uvmt_cv32_tb.iss_wrap.cpu
 
@@ -117,6 +117,8 @@ module uvmt_cv32_step_compare
          compared_str = $sformatf("GPR[%0d]", idx);
          if ((idx == insn_regs_write_addr) && (idx != 0) && (insn_regs_write_size == 1)) // Use register in insn_regs_write queue if it exists
             check_32bit(.compared(compared_str), .expected(step_compare_if.ovp_cpu_GPR[idx][31:0]), .actual(insn_regs_write_value));
+         // FIXME:strichmo:I am removing the static (non-written) register checks, as they fail in presence of I and D bus RAM stalls
+         // It would be highly desirable to find an alternative for this type of check to ensure unintended writes to do not
          //else // Use actual value from RTL to compare registers which should have not changed
          //   check_32bit(.compared(compared_str), .expected(step_compare_if.ovp_cpu_GPR[idx][31:0]), .actual(step_compare_if.riscy_GPR[idx]));
          step_compare_if.num_gpr_checks++;
@@ -128,7 +130,7 @@ module uvmt_cv32_step_compare
            step_compare_if.num_csr_checks++;
            ignore = 0;
            csr_val = 0;
-           ignore = 1; // strichmo:Need to resolve stalled pipeline issues with CSR matching
+           ignore = 1; // FIXME:strichmo:THIS MUSDT BE FIXED:Need to resolve stalled pipeline issues with CSR matching
            case (index)
              "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
              
@@ -234,7 +236,7 @@ module uvmt_cv32_step_compare
         step_ovp = 0;
         ret_ovp  = 1;
         #0 ->ev_ovp;
-        ->uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_strichmo_i.ovp_retire;
+        ->`CV32E40P_TRACER.ovp_retire;
     end
 
     // riscv_core
