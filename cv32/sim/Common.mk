@@ -66,10 +66,10 @@ BANNER=*************************************************************************
 #      *_TAG:    Not yet supported (TODO).
 #                
 
-CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
-CV32E40P_BRANCH ?= master
+CV32E40P_REPO   ?= https://github.com/strichmo/cv32e40p.git
+CV32E40P_BRANCH ?= strichmo/temp/tracer_rnd_stall
 #2020-09-24
-CV32E40P_HASH   ?= f04f1e8c0c2fde1dc353667612a48a6e95f7b366
+CV32E40P_HASH   ?= head
 #2020-09-17
 #CV32E40P_HASH   ?= 5c97310505eddbe36a429fd2fc9e0781ff89cd2f
 

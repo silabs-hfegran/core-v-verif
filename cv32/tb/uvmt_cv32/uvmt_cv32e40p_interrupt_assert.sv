@@ -370,7 +370,7 @@ module uvmt_cv32e40p_interrupt_assert
   // WFI wakeup to next instruction fetch
   property p_wfi_wake_to_instr_fetch; 
     disable iff (!rst_ni || !fetch_enable_i)
-      $fell(in_wfi) |-> ##[1:WFI_WAKEUP_LATENCY] if_stage_instr_rvalid_i;
+      in_wfi[*3] ##1 $fell(in_wfi) |-> ##[1:WFI_WAKEUP_LATENCY] if_stage_instr_rvalid_i;
   endproperty
   a_wfi_wake_to_instr_fetch: assert property(p_wfi_wake_to_instr_fetch)
     else
