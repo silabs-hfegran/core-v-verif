@@ -66,10 +66,13 @@ BANNER=*************************************************************************
 #      *_TAG:    Not yet supported (TODO).
 #                
 
-CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
-CV32E40P_BRANCH ?= master
+CV32E40P_REPO   ?= https://github.com/MikeOpenHWGroup/cv32e40p
+CV32E40P_BRANCH ?= tracer_rnd_stall
+CV32E40P_HASH   ?= head
+#CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
+#CV32E40P_BRANCH ?= master
 #2020-10-07
-CV32E40P_HASH   ?= 7d2ff67
+#CV32E40P_HASH   ?= 7d2ff67
 #2020-10-05
 #CV32E40P_HASH   ?= f9d6329
 #2020-09-24
