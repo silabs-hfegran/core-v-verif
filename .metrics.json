@@ -54,6 +54,17 @@
       }
     },
     {
+      "name":        "cv32_full_coverage_regression",
+      "description": "Full coverage regression for CV32 (no pulp tests)",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_full_covg.no_pulp --metrics --outfile=/mux-flow/build/repo/cv32_full_covg.no_pulp.json",
+        "listFile":  "/mux-flow/build/repo/cv32_full_covg.no_pulp.json"
+      }
+    },
+    {
       "name":        "cv32_full_stall_regression",
       "description": "Full regression for CV32 using dynamic test generation with random RAM stalls",
       "verbose":     "true",
