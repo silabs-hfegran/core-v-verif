@@ -60,8 +60,8 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_full_covg.no_pulp --metrics --outfile=/mux-flow/build/repo/cv32_full_covg.no_pulp.json",
-        "listFile":  "/mux-flow/build/repo/cv32_full_covg.no_pulp.json"
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_full_covg_no_pulp --metrics --outfile=/mux-flow/build/repo/cv32_full_covg_no_pulp.json",
+        "listFile":  "/mux-flow/build/repo/cv32_full_covg_no_pulp.json"
       }
     },
     {
