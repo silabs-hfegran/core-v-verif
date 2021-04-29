@@ -298,17 +298,17 @@ endfunction: connect_predictor
 
 function void uvme_cv32e40x_env_c::connect_rvfi_rvvi();
 
-   rvfi_agent.instr_mon_ap[0].connect(rvvi_agent.sequencer.rvfi_instr_export);
-   rvfi_agent.instr_mon_ap[1].connect(rvvi_agent.sequencer.rvfi_instr_export);
+   foreach (rvfi_agent.instr_mon_ap[i])
+      rvfi_agent.instr_mon_ap[i].connect(rvvi_agent.sequencer.rvfi_instr_export);   
 
 endfunction : connect_rvfi_rvvi
 
 function void uvme_cv32e40x_env_c::connect_scoreboard();
    
    // Connect the CORE Scoreboard
-   rvfi_agent.instr_mon_ap[0].connect(core_sb.rvfi_instr_export);
-   rvfi_agent.instr_mon_ap[1].connect(core_sb.rvfi_instr_export);
    rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
+   foreach (rvfi_agent.instr_mon_ap[i])
+      rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);   
    
 endfunction: connect_scoreboard
 

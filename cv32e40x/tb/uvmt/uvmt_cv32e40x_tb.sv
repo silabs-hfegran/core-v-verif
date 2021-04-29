@@ -95,7 +95,7 @@ module uvmt_cv32e40x_tb;
                             )
                             dut_wrap (.*);
 
-  bind cv32e40x_core
+  bind cv32e40x_wrapper
     uvma_rvfi_instr_if#(uvme_cv32e40x_pkg::ILEN,
                         uvme_cv32e40x_pkg::XLEN) rvfi_instr_if_0_i(.clk(clk_i),
                                                                    .reset_n(rst_ni),
@@ -126,39 +126,6 @@ module uvmt_cv32e40x_tb;
                                                                    .rvfi_mem_rmask(rvfi_i.rvfi_mem_rmask[uvme_cv32e40x_pkg::XLEN/8*0+:uvme_cv32e40x_pkg::XLEN/8]),
                                                                    .rvfi_mem_wdata(rvfi_i.rvfi_mem_wdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
                                                                    .rvfi_mem_wmask(rvfi_i.rvfi_mem_wmask[uvme_cv32e40x_pkg::XLEN/8*0+:uvme_cv32e40x_pkg::XLEN/8])
-                                                                   );
-
-  bind cv32e40x_core
-    uvma_rvfi_instr_if#(uvme_cv32e40x_pkg::ILEN,
-                        uvme_cv32e40x_pkg::XLEN) rvfi_instr_if_1_i(.clk(clk_i),
-                                                                   .reset_n(rst_ni),
-    
-                                                                   .rvfi_valid(rvfi_i.rvfi_valid[1]),
-                                                                   .rvfi_order(rvfi_i.rvfi_order[uvma_rvfi_pkg::ORDER_WL*1+:uvma_rvfi_pkg::ORDER_WL]),
-                                                                   .rvfi_insn(rvfi_i.rvfi_insn[uvme_cv32e40x_pkg::ILEN*1+:uvme_cv32e40x_pkg::ILEN]),
-                                                                   .rvfi_trap(rvfi_i.rvfi_trap[1]),
-                                                                   .rvfi_halt(rvfi_i.rvfi_halt[1]),
-                                                                   .rvfi_intr(rvfi_i.rvfi_intr[1]),
-                                                                   //.rvfi_intr_id(rvfi_i.rvfi_intr_id[uvma_rvfi_pkg::MAX_INTR_ID_WL*1+:uvma_rvfi_pkg::MAX_INTR_ID_WL]),
-                                                                   .rvfi_mode(rvfi_i.rvfi_mode[uvma_rvfi_pkg::MODE_WL*1+:uvma_rvfi_pkg::MODE_WL]),
-                                                                   .rvfi_ixl(rvfi_i.rvfi_ixl[uvma_rvfi_pkg::IXL_WL*1+:uvma_rvfi_pkg::IXL_WL]),
-                                                                   .rvfi_pc_rdata(rvfi_i.rvfi_pc_rdata[uvme_cv32e40x_pkg::XLEN*1+:uvme_cv32e40x_pkg::XLEN]),
-                                                                   .rvfi_pc_wdata(rvfi_i.rvfi_pc_wdata[uvme_cv32e40x_pkg::XLEN*1+:uvme_cv32e40x_pkg::XLEN]),
-                                                                   .rvfi_rs1_addr(rvfi_i.rvfi_rs1_addr[uvma_rvfi_pkg::GPR_ADDR_WL*1+:uvma_rvfi_pkg::GPR_ADDR_WL]),
-                                                                   .rvfi_rs1_rdata(rvfi_i.rvfi_rs1_rdata[uvme_cv32e40x_pkg::XLEN*1+:uvme_cv32e40x_pkg::XLEN]),    
-                                                                   .rvfi_rs2_addr(rvfi_i.rvfi_rs2_addr[uvma_rvfi_pkg::GPR_ADDR_WL*1+:uvma_rvfi_pkg::GPR_ADDR_WL]),
-                                                                   .rvfi_rs2_rdata(rvfi_i.rvfi_rs2_rdata[uvme_cv32e40x_pkg::XLEN*1+:uvme_cv32e40x_pkg::XLEN]),    
-                                                                   .rvfi_rs3_addr('0),
-                                                                   .rvfi_rs3_rdata('0),
-                                                                   .rvfi_rd1_addr(rvfi_i.rvfi_rd_addr[uvma_rvfi_pkg::GPR_ADDR_WL*1+:uvma_rvfi_pkg::GPR_ADDR_WL]),
-                                                                   .rvfi_rd1_wdata(rvfi_i.rvfi_rd_wdata[uvme_cv32e40x_pkg::XLEN*1+:uvme_cv32e40x_pkg::XLEN]),
-                                                                   .rvfi_rd2_addr('0),
-                                                                   .rvfi_rd2_wdata('0),
-                                                                   .rvfi_mem_addr(rvfi_i.rvfi_mem_addr[uvme_cv32e40x_pkg::XLEN*1+:uvme_cv32e40x_pkg::XLEN]),
-                                                                   .rvfi_mem_rdata(rvfi_i.rvfi_mem_rdata[uvme_cv32e40x_pkg::XLEN*1+:uvme_cv32e40x_pkg::XLEN]),
-                                                                   .rvfi_mem_rmask(rvfi_i.rvfi_mem_rmask[uvme_cv32e40x_pkg::XLEN/8*1+:uvme_cv32e40x_pkg::XLEN/8]),
-                                                                   .rvfi_mem_wdata(rvfi_i.rvfi_mem_wdata[uvme_cv32e40x_pkg::XLEN*1+:uvme_cv32e40x_pkg::XLEN]),
-                                                                   .rvfi_mem_wmask(rvfi_i.rvfi_mem_wmask[uvme_cv32e40x_pkg::XLEN/8*1+:uvme_cv32e40x_pkg::XLEN/8])
                                                                    );
 
   // Bind in OBI interfaces (montioring only supported currently)
@@ -343,7 +310,7 @@ bind cv32e40x_wrapper
       
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
       generate for (genvar gv_i = 0; gv_i < 32; gv_i++) begin : get_gpr
-        assign step_compare_if.riscy_GPR[gv_i] = dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.register_file_wrapper_i.register_file_i.mem[gv_i];
+        assign step_compare_if.riscy_GPR[gv_i] = dut_wrap.cv32e40x_wrapper_i.core_i.register_file_wrapper_i.register_file_i.mem[gv_i];
       end
       endgenerate
 
@@ -561,8 +528,7 @@ bind cv32e40x_wrapper
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_instr_if_i));
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
-     uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.core_i.rvfi_instr_if_0_i));
-     uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif1"),.value(dut_wrap.cv32e40x_wrapper_i.core_i.rvfi_instr_if_1_i));
+     uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
      uvm_config_db#(virtual RVVI_state#(.ILEN(uvme_cv32e40x_pkg::ILEN),
                                         .XLEN(uvme_cv32e40x_pkg::XLEN)
                                         ))::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("state_vif"), .value(iss_wrap.cpu.state));

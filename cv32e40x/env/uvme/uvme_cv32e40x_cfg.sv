@@ -99,7 +99,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       isacov_cfg.ext_zifencei_enabled == 1;
       isacov_cfg.ext_zicsr_enabled    == 1;
 
-      rvfi_cfg.nret == 2;
+      rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
 
       if (is_active == UVM_ACTIVE) {
          isacov_cfg.is_active    == UVM_PASSIVE;
