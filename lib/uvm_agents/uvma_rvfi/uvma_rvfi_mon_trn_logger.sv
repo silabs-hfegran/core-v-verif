@@ -18,9 +18,6 @@
 `ifndef __UVMA_RVFI_MON_TRN_LOGGER_SV__
 `define __UVMA_RVFI_MON_TRN_LOGGER_SV__
 
-`uvm_analysis_imp_decl(_rvfi_instr)
-
-
 /**
  * Component writing Rvfi monitor transactions rvfi data to disk as plain text.
  */
@@ -32,6 +29,9 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
 );
       
    uvm_analysis_imp_rvfi_instr#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN), uvma_rvfi_mon_trn_logger_c) instr_export;   
+
+   const string format_header_str = "%15s: RVFI %6s %8s %8s %s %03s %08s %03s %08s %03s %08s %08s %08s";   
+   const string format_instr_str  = "%15s: RVFI %6d %8x %8s %s x%2d %08x x%2d %08x x%2d %08x %08x %08x";   
 
    `uvm_component_utils(uvma_rvfi_mon_trn_logger_c)
    
@@ -49,63 +49,31 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
     * Writes contents of t to disk
     */
    virtual function void write(uvml_trn_seq_item_c t);
-      //fwrite($sformatf("%t: %s: %s", $time, agent_name, t.convert2string()));
    endfunction : write
    
    virtual function void write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) t);      
-      fwrite($sformatf("%t: %s: %s", $time, agent_name, t.convert2string));
+      fwrite($sformatf(format_instr_str, $sformatf("%t", $time),
+                       t.order,
+                       t.pc_rdata, 
+                       t.get_insn_word_str(),
+                       get_mode_str(t.mode),
+                       t.rs1_addr, t.rs1_rdata, 
+                       t.rs2_addr, t.rs2_rdata,
+                       t.rd1_addr, t.rd1_wdata,
+                       t.mem_addr, t.mem_rdata));
+
    endfunction : write_rvfi_instr
 
    /**
     * Writes log header to disk
     */
    virtual function void print_header();
-      
-      // TODO Implement uvma_rvfi_mon_trn_logger_c::print_header()
-      // Ex: fwrite("----------------------------------------------");
-      //     fwrite(" TIME | FIELD A | FIELD B | FIELD C | FIELD D ");
-      //     fwrite("----------------------------------------------");
-      
+      fwrite($sformatf(format_header_str, $sformatf("%t", $time),
+                       "Order", "PC", "Instr", "M", "rs1", "rs1_data", "rs2", "rs2_data", "rd", "rd_data", "mem_addr", "mem_data"));
+
    endfunction : print_header
    
 endclass : uvma_rvfi_mon_trn_logger_c
-
-
-/**
- * Component writing RVFI monitor transactions rvfi data to disk as JavaScript Object Notation (JSON).
- */
-class uvma_rvfi_mon_trn_logger_json_c extends uvma_rvfi_mon_trn_logger_c;
-   
-   `uvm_component_utils(uvma_rvfi_mon_trn_logger_json_c)
-   
-   
-   /**
-    * Set file extension to '.json'.
-    */
-   function new(string name="uvma_rvfi_mon_trn_logger_json", uvm_component parent=null);
-      
-      super.new(name, parent);
-      fextension = "json";
-      
-   endfunction : new
-   
-   /**
-    * Writes contents of t to disk.
-    */
-   virtual function void write(uvml_trn_seq_item_c t);
-      
-   endfunction : write
-   
-   /**
-    * Empty function.
-    */
-   virtual function void print_header();
-      
-      // Do nothing: JSON files do not use headers.
-      
-   endfunction : print_header
-
-endclass : uvma_rvfi_mon_trn_logger_json_c
 
 
 `endif // __UVMA_RVFI_MON_TRN_LOGGER_SV__

@@ -87,7 +87,7 @@ function void uvma_rvvi_sqr_c::build_phase(uvm_phase phase);
    
 endfunction : build_phase
 
-function void uvma_rvvi_sqr_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr);   
+function void uvma_rvvi_sqr_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr);      
    rvfi_instr_q.push_back(rvfi_instr);
 endfunction : write_rvfi_instr
 

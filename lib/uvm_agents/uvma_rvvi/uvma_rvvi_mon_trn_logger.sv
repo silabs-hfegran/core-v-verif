@@ -33,7 +33,10 @@ class uvma_rvvi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
    uvm_analysis_imp_rvvi_state#(uvma_rvvi_state_seq_item_c, uvma_rvvi_mon_trn_logger_c) state_export;
 
    `uvm_component_utils(uvma_rvvi_mon_trn_logger_c)
-   
+
+   const string format_header_str = "%15s: RVVI %6s %8s %8s %s %3s %8s";
+   const string format_instr_str  = "%15s: RVVI %6d %8x %8s %s x%2s %8s";
+
    /**
     * Default constructor.
     */
@@ -52,60 +55,35 @@ class uvma_rvvi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
    endfunction : write
    
    virtual function void write_rvvi_state(uvma_rvvi_state_seq_item_c t);      
-      fwrite($sformatf("%t: %s: %s", $time, agent_name, t.convert2string));
+      string  gpr_index_str = "--";
+      string  gpr_data_str  = "--------";
+
+      if (t.gpr_update.size()) begin
+         int unsigned index;
+         void'(t.gpr_update.first(index));
+         gpr_index_str = $sformatf("%2d", index);
+         gpr_data_str = $sformatf("%08x", t.gpr_update[index]);
+      end
+
+      fwrite($sformatf(format_instr_str, $sformatf("%t", $time),
+                       t.order,
+                       t.pc,
+                       t.get_insn_word_str(),
+                       get_mode_str(t.mode),                       
+                       gpr_index_str,
+                       gpr_data_str));
    endfunction : write_rvvi_state
 
    /**
     * Writes log header to disk
     */
    virtual function void print_header();
-      
-      // TODO Implement uvma_rvvi_mon_trn_logger_c::print_header()
-      // Ex: fwrite("----------------------------------------------");
-      //     fwrite(" TIME | FIELD A | FIELD B | FIELD C | FIELD D ");
-      //     fwrite("----------------------------------------------");
-      
+      fwrite($sformatf(format_header_str, $sformatf("%t", $time),
+                       "Order", "PC", "Instr", "M", "rd", "rd_data"));
+
    endfunction : print_header
-   
+
 endclass : uvma_rvvi_mon_trn_logger_c
-
-
-/**
- * Component writing RVVI monitor transactions rvvi data to disk as JavaScript Object Notation (JSON).
- */
-class uvma_rvvi_mon_trn_logger_json_c extends uvma_rvvi_mon_trn_logger_c;
-   
-   `uvm_component_utils(uvma_rvvi_mon_trn_logger_json_c)
-   
-   
-   /**
-    * Set file extension to '.json'.
-    */
-   function new(string name="uvma_rvvi_mon_trn_logger_json", uvm_component parent=null);
-      
-      super.new(name, parent);
-      fextension = "json";
-      
-   endfunction : new
-   
-   /**
-    * Writes contents of t to disk.
-    */
-   virtual function void write(uvml_trn_seq_item_c t);
-      
-   endfunction : write
-   
-   /**
-    * Empty function.
-    */
-   virtual function void print_header();
-      
-      // Do nothing: JSON files do not use headers.
-      
-   endfunction : print_header
-   
-
-endclass : uvma_rvvi_mon_trn_logger_json_c
 
 
 `endif // __UVMA_RVVI_MON_TRN_LOGGER_SV__

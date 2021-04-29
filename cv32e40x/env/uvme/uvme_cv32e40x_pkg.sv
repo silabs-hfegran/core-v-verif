@@ -64,6 +64,7 @@ package uvme_cv32e40x_pkg;
    `include "uvme_rv32isa_covg.sv"
    `include "uvme_cv32e40x_cov_model.sv"
    `include "uvme_cv32e40x_sb.sv"
+   `include "uvme_cv32e40x_core_sb.sv"
    `include "uvme_cv32e40x_vsqr.sv"
    `include "uvme_cv32e40x_env.sv"
    

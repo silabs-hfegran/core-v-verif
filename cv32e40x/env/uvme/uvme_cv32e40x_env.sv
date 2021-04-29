@@ -33,6 +33,7 @@ class uvme_cv32e40x_env_c extends uvm_env;
    uvme_cv32e40x_cov_model_c  cov_model;
    uvme_cv32e40x_prd_c        predictor;
    uvme_cv32e40x_sb_c         sb;
+   uvme_cv32e40x_core_sb_c    core_sb;
    uvme_cv32e40x_vsqr_c       vsequencer;
    
    // Agents
@@ -111,6 +112,11 @@ class uvme_cv32e40x_env_c extends uvm_env;
    extern virtual function void connect_predictor();
    
    /**
+    * Connects the RVFI to the RVVI for step and compare feedback
+    */
+   extern virtual function void connect_rvfi_rvvi();
+
+   /**
     * Connects scoreboards components to agents/predictor.
     */
    extern virtual function void connect_scoreboard();
@@ -175,10 +181,15 @@ function void uvme_cv32e40x_env_c::connect_phase(uvm_phase phase);
    
    super.connect_phase(phase);
    
-   if (cfg.enabled) begin
+   if (cfg.enabled) begin      
+      if (cfg.rvvi_cfg.is_active == UVM_ACTIVE) begin
+         connect_rvfi_rvvi();
+         rvvi_agent.driver.clknrst_sequencer = clknrst_agent.sequencer;
+      end
+
       if (cfg.scoreboarding_enabled) begin
          connect_predictor ();
-         connect_scoreboard();
+         connect_scoreboard();      
       end
       
       if (cfg.is_active) begin         
@@ -239,8 +250,9 @@ function void uvme_cv32e40x_env_c::create_agents();
    debug_agent = uvma_debug_agent_c::type_id::create("debug_agent", this);
    obi_instr_agent = uvma_obi_agent_c::type_id::create("obi_instr_agent", this);
    obi_data_agent  = uvma_obi_agent_c::type_id::create("obi_data_agent", this);
-   //rvfi_agent = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
-   //rvvi_agent = uvma_rvvi_agent_c#(ILEN,XLEN)::type_id::create("rvvi_agent", this);
+   rvfi_agent = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
+   rvvi_agent = uvma_rvvi_agent_c#(ILEN,XLEN)::type_id::create("rvvi_agent", this);
+
 endfunction: create_agents
 
 
@@ -248,7 +260,8 @@ function void uvme_cv32e40x_env_c::create_env_components();
    
    if (cfg.scoreboarding_enabled) begin
       predictor = uvme_cv32e40x_prd_c::type_id::create("predictor", this);
-      sb        = uvme_cv32e40x_sb_c ::type_id::create("sb"       , this);
+      sb        = uvme_cv32e40x_sb_c::type_id::create("sb"       , this);
+      core_sb   = uvme_cv32e40x_core_sb_c::type_id::create("core_sb", this);
    end
    
 endfunction: create_env_components
@@ -283,14 +296,19 @@ function void uvme_cv32e40x_env_c::connect_predictor();
    
 endfunction: connect_predictor
 
+function void uvme_cv32e40x_env_c::connect_rvfi_rvvi();
+
+   rvfi_agent.instr_mon_ap[0].connect(rvvi_agent.sequencer.rvfi_instr_export);
+   rvfi_agent.instr_mon_ap[1].connect(rvvi_agent.sequencer.rvfi_instr_export);
+
+endfunction : connect_rvfi_rvvi
 
 function void uvme_cv32e40x_env_c::connect_scoreboard();
    
-   // TODO Connect agents -> scoreboard
-   //      Ex: debug_agent.mon_ap.connect(sb.debug_sb.act_export);
-   
-   // TODO Connect predictor -> scoreboard
-   //      Ex: predictor.debug_ap.connect(sb.debug_sb.exp_export);
+   // Connect the CORE Scoreboard
+   rvfi_agent.instr_mon_ap[0].connect(core_sb.rvfi_instr_export);
+   rvfi_agent.instr_mon_ap[1].connect(core_sb.rvfi_instr_export);
+   rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
    
 endfunction: connect_scoreboard
 

@@ -32,8 +32,8 @@ class uvma_rvfi_agent_c#(int ILEN=DEFAULT_ILEN,
    uvma_rvfi_cntxt_c#(ILEN,XLEN)  cntxt;
    
    // Components   
-   uvma_rvfi_instr_mon_c#(ILEN,XLEN)       instr_monitor[];
-   uvma_rvfi_mon_trn_logger_c#(ILEN,XLEN)  mon_trn_logger;
+   uvma_rvfi_instr_mon_c#(ILEN,XLEN)               instr_monitor[];
+   uvma_rvfi_mon_trn_logger_c#(ILEN,XLEN)          mon_trn_logger;
    
    // TLM   
    uvm_analysis_port#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN)) instr_mon_ap[];   
@@ -193,7 +193,7 @@ function void uvma_rvfi_agent_c::create_components();
       instr_monitor[i] = uvma_rvfi_instr_mon_c#(ILEN,XLEN)::type_id::create($sformatf("instr_monitor%0d", i), this);
       instr_monitor[i].nret_id = i;
    end   
-   mon_trn_logger  = uvma_rvfi_mon_trn_logger_c#(ILEN,XLEN)::type_id::create("mon_trn_logger" , this);
+   mon_trn_logger         = uvma_rvfi_mon_trn_logger_c#(ILEN,XLEN)::type_id::create("mon_trn_logger" , this);   
    
 endfunction : create_components
 

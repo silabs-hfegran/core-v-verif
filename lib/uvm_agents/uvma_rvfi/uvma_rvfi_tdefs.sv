@@ -25,4 +25,15 @@ typedef enum bit[MODE_WL-1:0] {
    UVMA_RVFI_M_MODE        = 3
 } uvma_rvfi_mode;
 
+function string get_mode_str(uvma_rvfi_mode mode);
+   case (mode)
+      UVMA_RVFI_U_MODE: return "U";
+      UVMA_RVFI_M_MODE: return "M";
+      UVMA_RVFI_S_MODE: return "S";
+   endcase
+
+   return "?";
+
+endfunction : get_mode_str
+
 `endif // __UVMA_RVFI_TDEFS_SV__

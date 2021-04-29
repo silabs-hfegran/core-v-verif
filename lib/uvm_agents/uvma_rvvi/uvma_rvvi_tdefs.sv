@@ -31,4 +31,15 @@ typedef enum int unsigned {
    UVMA_RVVI_HALT  = 2
 } uvma_rvvi_rm_action;
 
+function string get_mode_str(uvma_rvvi_mode mode);
+   case (mode)
+      UVMA_RVVI_U_MODE: return "U";
+      UVMA_RVVI_M_MODE: return "M";
+      UVMA_RVVI_S_MODE: return "S";      
+   endcase
+
+   return "?";
+   
+endfunction : get_mode_str
+
 `endif // __UVMA_RVVI_TDEFS_SV__

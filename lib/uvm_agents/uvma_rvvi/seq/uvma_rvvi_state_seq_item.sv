@@ -65,6 +65,11 @@ class uvma_rvvi_state_seq_item_c#(int ILEN=32, int XLEN=32) extends uvml_trn_seq
     */
    extern function string convert2string();
 
+   /**
+    * Get instruction hex string with compressed instructions displayed
+    */
+   extern function string get_insn_word_str();
+
 endclass : uvma_rvvi_state_seq_item_c
 
 `pragma protect begin
@@ -76,7 +81,7 @@ function uvma_rvvi_state_seq_item_c::new(string name="uvma_rvvi_seq_item");
 endfunction : new
 
 function string uvma_rvvi_state_seq_item_c::convert2string();
-   convert2string = $sformatf("Order: %0d, insn: 0x%0x, pc: 0x%08x, mode: %s, ixl: 0x%01x", 
+   convert2string = $sformatf("Order: %0d, insn: 0x%08x, pc: 0x%08x, mode: %s, ixl: 0x%01x", 
                               order, insn, pc, mode.name(), ixl);
    if (trap)
       convert2string = $sformatf("%s TRAP", convert2string);
@@ -86,9 +91,16 @@ function string uvma_rvvi_state_seq_item_c::convert2string();
       convert2string = $sformatf("%s INTR", convert2string);
 
    foreach (gpr_update[i]) begin
-      convert2string = $sformatf("%s GPR[%0d]: 0x%08x", convert2string, i, gpr_update[i]);
+      convert2string = $sformatf("%s GPR[%02d]: 0x%08x", convert2string, i, gpr_update[i]);
    end
 endfunction : convert2string
+
+function string uvma_rvvi_state_seq_item_c::get_insn_word_str();
+   if (isize == 2)
+      return $sformatf("----%04x", insn[15:0]);
+   
+   return $sformatf("%08x", insn);
+endfunction : get_insn_word_str
 
 `pragma protect end
 

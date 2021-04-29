@@ -24,7 +24,11 @@
  * CV32E40X environment (uvme_cv32e40x_env_c) components.
  */
 class uvme_cv32e40x_cfg_c extends uvm_object;
-   
+
+   // Status of plusarg to control testbench features
+   bit                           use_iss  = 0;
+   bit                           use_rvvi = 0;
+
    // Integrals
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
@@ -65,12 +69,15 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    constraint defaults_cons {
       soft enabled                == 0;
       soft is_active              == UVM_PASSIVE;
-      soft scoreboarding_enabled  == 1;      
+      soft scoreboarding_enabled  == 1; 
       soft cov_model_enabled      == 1;
       soft trn_log_enabled        == 1;
       soft sys_clk_period         == uvme_cv32e40x_sys_default_clk_period; // see uvme_cv32e40x_constants.sv      
    }
    
+   constraint scoreboard_cons {
+      (!(use_iss && use_rvvi)) -> (scoreboarding_enabled == 0);
+   }
    constraint agent_cfg_cons {
       if (enabled) {
          clknrst_cfg.enabled   == 1;
@@ -78,8 +85,8 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
          debug_cfg.enabled     == 1;
          obi_instr_cfg.enabled == 1;
          obi_data_cfg.enabled  == 1;
-         rvfi_cfg.enabled      == 0;
-         rvvi_cfg.enabled      == 0;
+         rvfi_cfg.enabled      == 1;
+         rvvi_cfg.enabled      == 1;
       }
       obi_instr_cfg.write_enabled == 0;
       obi_instr_cfg.read_enabled  == 1;
@@ -102,8 +109,8 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
          obi_instr_cfg.is_active == UVM_PASSIVE;
          obi_data_cfg.is_active  == UVM_PASSIVE;
          rvfi_cfg.is_active      == UVM_PASSIVE;
-         // FIXME:strichmo:Eventually this should be connected to an ISS enabled run-time type switch
-         rvvi_cfg.is_active      == UVM_ACTIVE;
+         (use_rvvi) -> rvvi_cfg.is_active == UVM_ACTIVE;
+         (!use_rvvi)-> rvvi_cfg.is_active == UVM_PASSIVE;
       }
       
       if (trn_log_enabled) {
@@ -141,6 +148,12 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    
    super.new(name);
 
+   if ($test$plusargs("USE_ISS")) 
+      use_iss = 1;
+
+   if ($test$plusargs("USE_RVVI")) 
+      use_rvvi = 1;
+   
    isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    interrupt_cfg = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");

@@ -99,14 +99,16 @@ task uvma_rvvi_drv_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
 
-   forever begin
-      seq_item_port.get_next_item(req);
-      `uvml_hrtbt()
-      drv_req(req);
-      ap.write(req);
-      seq_item_port.item_done();
+   if (cfg.enabled) begin
+      forever begin
+         seq_item_port.get_next_item(req);
+         `uvml_hrtbt()
+         drv_req(req);
+         ap.write(req);
+         seq_item_port.item_done();
+      end
    end
-   
+      
 endtask : run_phase
 
 task uvma_rvvi_drv_c::drv_req(REQ req);

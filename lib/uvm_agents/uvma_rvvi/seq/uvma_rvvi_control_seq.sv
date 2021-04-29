@@ -59,7 +59,7 @@ task uvma_rvvi_control_seq_c::body();
       wait (p_sequencer.rvfi_instr_q.size());
       last_rvfi_instr = p_sequencer.rvfi_instr_q.pop_front();
 
-      `uvm_info("CONTROL", $sformatf("Received RVFI: %0d", last_rvfi_instr.order), UVM_HIGH);
+      `uvm_info("CONTROL", $sformatf("Received RVFI: %0d", last_rvfi_instr.order), UVM_DEBUG);
 
       // Always step the RM
       step_rm();
@@ -77,7 +77,5 @@ task uvma_rvvi_control_seq_c::step_rm();
    });
    finish_item(step_rm_seq);
 endtask : step_rm
-
-
 
 `endif // __UVMA_RVVI_CONTROL_SEQ_SV__

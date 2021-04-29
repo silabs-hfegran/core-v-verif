@@ -98,6 +98,16 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
     */
    extern function string convert2string();
 
+   /**
+    * Get instruction hex string with compressed instructions displayed
+    */
+   extern function string get_insn_word_str();
+
+   /**
+    * Decode compressed instruction
+    */
+   extern function bit is_compressed_insn();
+
 endclass : uvma_rvfi_instr_seq_item_c
 
 `pragma protect begin
@@ -109,18 +119,18 @@ function uvma_rvfi_instr_seq_item_c::new(string name="uvma_rvfi_seq_item");
 endfunction : new
 
 function string uvma_rvfi_instr_seq_item_c::convert2string();
-   convert2string = $sformatf("Order: %0d, insn: 0x%0x, pc: 0x%08x, nret_id: %0d, mode: %s, ixl: 0x%01x", 
+   convert2string = $sformatf("Order: %0d, insn: 0x%08x, pc: 0x%08x, nret_id: %0d, mode: %s, ixl: 0x%01x", 
                               order, insn, pc_rdata, this.nret_id, mode.name(), ixl);
    if (rs1_addr)
-      convert2string = $sformatf("%s rs1 RD: x%0d = 0x%08x", convert2string, rs1_addr, rs1_rdata);
+      convert2string = $sformatf("%s rs1: x%0d = 0x%08x", convert2string, rs1_addr, rs1_rdata);
    if (rs2_addr)
-      convert2string = $sformatf("%s rs2 RD: x%0d = 0x%08x", convert2string, rs2_addr, rs2_rdata);
+      convert2string = $sformatf("%s rs2: x%0d = 0x%08x", convert2string, rs2_addr, rs2_rdata);
    if (rs3_addr)
-      convert2string = $sformatf("%s rs3 RD: x%0d = 0x%08x", convert2string, rs3_addr, rs3_rdata);
+      convert2string = $sformatf("%s rs3: x%0d = 0x%08x", convert2string, rs3_addr, rs3_rdata);
    if (rd1_addr)
-      convert2string = $sformatf("%s rd WR: x%0d = 0x%08x", convert2string, rd1_addr, rd1_wdata);
+      convert2string = $sformatf("%s rd: x%0d = 0x%08x", convert2string, rd1_addr, rd1_wdata);
    if (rd2_addr)
-      convert2string = $sformatf("%s rd WR: x%0d = 0x%08x", convert2string, rd2_addr, rd2_wdata);
+      convert2string = $sformatf("%s rd2: x%0d = 0x%08x", convert2string, rd2_addr, rd2_wdata);
    if (trap)
       convert2string = $sformatf("%s TRAP", convert2string);
    if (halt)
@@ -128,6 +138,20 @@ function string uvma_rvfi_instr_seq_item_c::convert2string();
    if (intr)
       convert2string = $sformatf("%s INTR: 0x%0x", convert2string, intr_id);
 endfunction : convert2string
+
+function string uvma_rvfi_instr_seq_item_c::get_insn_word_str();
+   if (is_compressed_insn)
+      return $sformatf("----%04x", insn[15:0]);
+   
+   return $sformatf("%08x", insn);
+endfunction : get_insn_word_str
+
+function bit uvma_rvfi_instr_seq_item_c::is_compressed_insn();
+   if (insn[31:16] == 0 && insn[1:0] inside {0,1,2})
+      return 1;
+
+   return 0;
+endfunction : is_compressed_insn
 
 `pragma protect end
 

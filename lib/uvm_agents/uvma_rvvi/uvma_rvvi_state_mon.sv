@@ -39,6 +39,8 @@ class uvma_rvvi_state_mon_c#(int ILEN=DEFAULT_ILEN,
    // TLM
    uvm_analysis_port#(uvma_rvvi_state_seq_item_c#(ILEN,XLEN))  ap;   
    
+   string log_tag = "RVVIMONLOG";
+
    `uvm_component_utils_begin(uvma_rvvi_state_mon_c)      
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
@@ -90,7 +92,10 @@ endfunction : new
 function void uvma_rvvi_state_mon_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
-   
+
+   if ($test$plusargs("log_rvvi"))
+      set_report_id_verbosity(log_tag, UVM_HIGH);
+
    void'(uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::get(this, "", "cfg", cfg));
    if (!cfg) begin
       `uvm_fatal("CFG", "Configuration handle is null")
@@ -158,6 +163,8 @@ task uvma_rvvi_state_mon_c::monitor_rvvi_state();
          end
       end
       
+      `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
+
       ap.write(mon_trn);
    end
 endtask : monitor_rvvi_state

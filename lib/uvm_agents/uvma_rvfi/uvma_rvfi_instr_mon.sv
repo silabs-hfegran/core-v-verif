@@ -36,6 +36,8 @@ class uvma_rvfi_instr_mon_c#(int ILEN=DEFAULT_ILEN,
    // TLM
    uvm_analysis_port#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN))  ap;   
    
+   string log_tag = "RVFIMONLOG";
+
    `uvm_component_utils_begin(uvma_rvfi_instr_mon_c)
       `uvm_field_int(nret_id, UVM_DEFAULT)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -76,6 +78,9 @@ endfunction : new
 function void uvma_rvfi_instr_mon_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
+   
+   if ($test$plusargs("log_rvfi"))
+      set_report_id_verbosity(log_tag, UVM_HIGH);
    
    void'(uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::get(this, "", "cfg", cfg));
    if (!cfg) begin
@@ -153,6 +158,8 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn.mem_rmask = cntxt.instr_vif[nret_id].mon_cb.rvfi_mem_rmask;
          mon_trn.mem_wdata = cntxt.instr_vif[nret_id].mon_cb.rvfi_mem_wdata;
          mon_trn.mem_wmask = cntxt.instr_vif[nret_id].mon_cb.rvfi_mem_wmask;
+
+         `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
 
          ap.write(mon_trn);
       end      
