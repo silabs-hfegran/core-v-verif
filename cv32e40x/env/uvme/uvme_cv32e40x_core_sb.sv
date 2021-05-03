@@ -22,6 +22,11 @@
 
 class uvme_cv32e40x_core_sb_c extends uvm_scoreboard;
    
+   // Local parameters
+
+   // Fail-safe to kill the test with fatal error if the reorder queue gets to a certain size
+   localparam RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT = 16;
+
    // Objects
    uvme_cv32e40x_cfg_c    cfg;
    uvme_cv32e40x_cntxt_c  cntxt;
@@ -178,7 +183,14 @@ function void uvme_cv32e40x_core_sb_c::write_core_sb_rvfi_instr(uvma_rvfi_instr_
    if (!cfg.scoreboarding_enabled)
       return;
 
-   // If the next instruciont matches expected order, then add to queue
+   // If the next instruction's order field goes backward, then signal an error
+   if (rvfi_instr.order < next_rvfi_order) begin
+      `uvm_error("CORE_SB", $sformatf("Receied RVFI instruction with order fields less than expected, exp: %0d, insn.order: %0d",
+                                      next_rvfi_order, rvfi_instr.order));
+      return;
+   end
+
+   // If the next instruction's order field matches expected order, then add to queue
    if (rvfi_instr.order == next_rvfi_order) begin
       rvfi_instr_q.push_back(rvfi_instr);
       next_rvfi_order++;
@@ -199,8 +211,12 @@ function void uvme_cv32e40x_core_sb_c::write_core_sb_rvfi_instr(uvma_rvfi_instr_
    while (rvfi_instr_reorder_q.exists(next_rvfi_order)) begin
       rvfi_instr_q.push_back(rvfi_instr_reorder_q[next_rvfi_order]);
       rvfi_instr_reorder_q.delete(next_rvfi_order);
-      next_rvfi_order++;
-      $display("here");
+      next_rvfi_order++;      
+   end
+
+   // Fatal check for size limit
+   if (rvfi_instr_reorder_q.size() >= RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT) begin
+      `uvm_fatal("CORE_SB", $sformatf("The RVFI reorder instruction queue is too large: %0d", rvfi_instr_reorder_q.size()));
    end
 
    check_instr_queue();
