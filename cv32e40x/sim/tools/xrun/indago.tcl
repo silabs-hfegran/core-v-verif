@@ -8,6 +8,9 @@ if { [find -scope uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i -instance tracer_
     ida_probe -wave -wave_probe_args="uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_regs_write -depth 1"    
 }
 
+ida_probe -wave -wave_probe_args="uvmt_cv32e40x_tb.u_rvvi_handcar.opcode -depth 1"
+ida_probe -wave -wave_probe_args="uvmt_cv32e40x_tb.u_rvvi_handcar.disassembly -depth 1"
+
 # If the iss_wrap exists dump the string of the ISS disassembled instruction
 if { [find -scope uvmt_cv32e40x_tb -instance iss_wrap] != ""} {
     ida_probe -wave -wave_probe_args="uvmt_cv32e40x_tb.iss_wrap.cpu.state.decode -depth 1"    
