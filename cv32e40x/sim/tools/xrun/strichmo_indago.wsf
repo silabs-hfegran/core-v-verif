@@ -1,4 +1,4 @@
-# Indago Command Script (Wed, 28 Apr 2021 12:50:11 -0500)
+# Indago Command Script (Wed, 5 May 2021 17:33:21 -0500)
 #
 # Version 21.02.001-a
 
@@ -24,6 +24,17 @@ waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrap
 waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_err_i}
 waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_atop_o}
 waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_exokay_i}
+waveform group add {Imperas  ISS D RAM}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.Clk}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.DAddr}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.DData}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.DM}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.DSize}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.Dbe}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.Drd}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.Dwr}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.pc}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.x[16]}
 waveform group add {IRQ}
 waveform add -in_group {IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_i}
 waveform add -in_group {IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_ack_o}
@@ -73,10 +84,14 @@ waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.stat
 waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.pcnext}
 waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.x}
 waveform group add {Core}
-waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.rvfi_i.rvfi_valid}
+waveform group add -in_group {Core} {IRQ}
+waveform add -in_group {Core>IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_i}
+waveform add -in_group {Core>IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_id_o}
+waveform add -in_group {Core>IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_ack_o}
 waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.register_file_wrapper_i.register_file_i.mem}
 waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.pc_ex_i}
 waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mstatus_q}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcause_q}
 waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mscratch_q}
 waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mip}
 waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_q}
@@ -85,9 +100,9 @@ waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapp
 #
 # Visible Time Range
 #
-waveform xview limits -win Waveform 128.265213ns 185.311289ns
+waveform xview limits -win Waveform 46,030.343982ns 46,200.3ns
 #
 # Insertion Point
 #
-waveform insertion -win Waveform {7}
+waveform insertion -win Waveform {2,9}
 waveform scroll -win Waveform -vertical 0.0
