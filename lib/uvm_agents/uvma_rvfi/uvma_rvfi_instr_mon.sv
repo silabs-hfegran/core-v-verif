@@ -159,6 +159,9 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn.mem_wdata = cntxt.instr_vif[nret_id].mon_cb.rvfi_mem_wdata;
          mon_trn.mem_wmask = cntxt.instr_vif[nret_id].mon_cb.rvfi_mem_wmask;
 
+         mon_trn.csr_mip    = cntxt.instr_vif[nret_id].mon_cb.csr_mip;
+         mon_trn.csr_mcause = cntxt.instr_vif[nret_id].mon_cb.csr_mcause;
+
          `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
 
          ap.write(mon_trn);
@@ -167,3 +170,4 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
 endtask : monitor_rvfi_instr
 
 `endif // __UVMA_RVFI_INSTR_MON_SV__
+

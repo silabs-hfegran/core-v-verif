@@ -25,6 +25,7 @@ class uvma_rvvi_control_seq_item_c#(int ILEN=DEFAULT_ILEN,
                                     int XLEN=DEFAULT_XLEN)  extends uvml_trn_seq_item_c;
 
 
+   // Action to be taken (STEP, HALT, TRAP)
    rand uvma_rvvi_rm_action action;
 
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";

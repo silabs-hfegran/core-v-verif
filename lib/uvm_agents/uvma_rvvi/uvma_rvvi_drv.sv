@@ -22,23 +22,24 @@
 /**
  * Component driving a Clock & Reset virtual interface (uvma_rvvi_if).
  */
-class uvma_rvvi_drv_c#(int ILEN=DEFAULT_ILEN, 
-                       int XLEN=DEFAULT_XLEN) extends uvm_driver#(
-   .REQ(uvma_rvvi_control_seq_item_c#(ILEN,XLEN)),
-   .RSP(uvma_rvvi_control_seq_item_c#(ILEN,XLEN))
+virtual class uvma_rvvi_drv_c#(int ILEN=DEFAULT_ILEN, 
+                               int XLEN=DEFAULT_XLEN,
+                               type REQ=uvma_rvvi_control_seq_item_c#(ILEN,XLEN),
+                               type RSP=REQ) extends uvm_driver#(
+   .REQ(REQ),
+   .RSP(RSP)
 );
-   
-   // Ugh...
-   uvma_clknrst_sqr_c clknrst_sequencer;
 
    // Objects
-   uvma_rvvi_cfg_c    cfg;
-   uvma_rvvi_cntxt_c  cntxt;
+   uvma_rvvi_cfg_c#(ILEN,XLEN)    cfg;
+   uvma_rvvi_cntxt_c#(ILEN,XLEN)  cntxt;
    
    // TLM
    uvm_analysis_port#(uvma_rvvi_control_seq_item_c)  ap;   
    
-   `uvm_component_utils_begin(uvma_rvvi_drv_c)
+   string log_tag = "RVVIDRV";
+
+   `uvm_field_utils_begin(uvma_rvvi_drv_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
@@ -53,7 +54,12 @@ class uvma_rvvi_drv_c#(int ILEN=DEFAULT_ILEN,
     * 2. Builds ap.
     */
    extern virtual function void build_phase(uvm_phase phase);
-   
+
+   /**
+    * Initialize signals
+    */
+   extern virtual task reset_phase(uvm_phase phase);
+
    /**
     * Obtains the reqs from the sequence item port and calls drv_req()
     */
@@ -64,8 +70,24 @@ class uvma_rvvi_drv_c#(int ILEN=DEFAULT_ILEN,
     */
    extern virtual task drv_req(REQ req);
 
-   extern virtual task stop_clknrst();
-   extern virtual task restart_clknrst();
+   /**
+    *  apply STEP instruction action to the RVVI
+    *  must be implemented by derived implementations
+    */
+   pure virtual task stepi(REQ req);
+
+   /**
+    *  apply TRAP instruction action to the RVVI
+    *  must be implemented by derived implementations
+    */
+   pure virtual task trap(REQ req);
+
+   /**
+    *  apply HALT instruction action to the RVVI
+    *  must be implemented by derived implementations
+    */
+   pure virtual task halt(REQ req);
+
 endclass : uvma_rvvi_drv_c
 
 function uvma_rvvi_drv_c::new(string name="uvma_rvvi_drv", uvm_component parent=null);
@@ -78,13 +100,13 @@ function void uvma_rvvi_drv_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
    
-   void'(uvm_config_db#(uvma_rvvi_cfg_c)::get(this, "", "cfg", cfg));
+   void'(uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::get(this, "", "cfg", cfg));
    if (!cfg) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    uvm_config_db#(uvma_rvvi_cfg_c)::set(this, "*", "cfg", cfg);
    
-   void'(uvm_config_db#(uvma_rvvi_cntxt_c)::get(this, "", "cntxt", cntxt));
+   void'(uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::get(this, "", "cntxt", cntxt));
    if (!cntxt) begin
       `uvm_fatal("CNTXT", "Context handle is null")
    end
@@ -94,6 +116,11 @@ function void uvma_rvvi_drv_c::build_phase(uvm_phase phase);
    
 endfunction : build_phase
 
+task uvma_rvvi_drv_c::reset_phase(uvm_phase phase);
+
+   super.reset_phase(phase);
+
+endtask : reset_phase
 
 task uvma_rvvi_drv_c::run_phase(uvm_phase phase);
    
@@ -114,38 +141,12 @@ endtask : run_phase
 task uvma_rvvi_drv_c::drv_req(REQ req);
    `uvm_info("RVVIDRV", $sformatf("Driving:\n%s", req.sprint()), UVM_HIGH);
    case (req.action)
-      UVMA_RVVI_STEPI: begin
-         // Stop the clock, step the ISS
-         stop_clknrst();
-         cntxt.control_vif.stepi();
-         @(cntxt.state_vif.notify);
-         // Restart the clock
-         restart_clknrst();
-      end
-      UVMA_RVVI_TRAP: begin
-         // Not implemented yet
-         `uvm_fatal("RVVIDRV", $sformatf("Action: %s not implemented yet", req.action.name()));
-      end
-      UVMA_RVVI_TRAP: begin
-         // Not implemented yet
-         `uvm_fatal("RVVIDRV", $sformatf("Action: %s not implemented yet", req.action.name()));
-      end
+      UVMA_RVVI_STEPI: stepi(req);
+      UVMA_RVVI_TRAP:  trap(req);
+      UVMA_RVVI_HALT:  halt(req);
    endcase
 
 endtask : drv_req
 
-task uvma_rvvi_drv_c::stop_clknrst();
-   uvma_clknrst_stop_clk_seq_c stop_clk_seq;
-   stop_clk_seq = uvma_clknrst_stop_clk_seq_c::type_id::create("stop_clk_seq");
-   assert(stop_clk_seq.randomize());
-   stop_clk_seq.start(clknrst_sequencer);
-endtask : stop_clknrst
-
-task uvma_rvvi_drv_c::restart_clknrst();
-   uvma_clknrst_restart_clk_seq_c restart_clk_seq;
-   restart_clk_seq = uvma_clknrst_restart_clk_seq_c::type_id::create("restart_clk_seq");
-   assert(restart_clk_seq.randomize());
-   restart_clk_seq.start(clknrst_sequencer);
-endtask : restart_clknrst
-
 `endif // __UVMA_RVVI_DRV_SV__
+

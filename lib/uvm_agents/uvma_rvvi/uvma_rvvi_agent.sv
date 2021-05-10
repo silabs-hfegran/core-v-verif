@@ -40,11 +40,12 @@ class uvma_rvvi_agent_c#(int ILEN=DEFAULT_ILEN,
    // TLM   
    uvm_analysis_port#(uvma_rvvi_state_seq_item_c#(ILEN,XLEN)) state_mon_ap;
    
+   string log_tag = "RVVIAGT";
+
    `uvm_component_param_utils_begin(uvma_rvvi_agent_c#(ILEN,XLEN))
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
-   `uvm_component_utils_end
-   
+   `uvm_component_utils_end  
    
    /**
     * Default constructor.
@@ -72,43 +73,43 @@ class uvma_rvvi_agent_c#(int ILEN=DEFAULT_ILEN,
    /**
     * Uses uvm_config_db to retrieve cfg and hand out to sub-components.
     */
-   extern function void get_and_set_cfg();
+   extern virtual function void get_and_set_cfg();
    
    /**
     * Uses uvm_config_db to retrieve cntxt and hand out to sub-components.
     */
-   extern function void get_and_set_cntxt();
+   extern virtual function void get_and_set_cntxt();
    
    /**
     * Uses uvm_config_db to retrieve the Virtual Interface (vif) associated with this
     * agent.
     */
-   extern function void retrieve_vif();
+   extern virtual function void retrieve_vif();
    
    /**
     * Creates sub-components.
     */
-   extern function void create_components();
+   extern virtual function void create_components();
    
    /**
     * Connects sequencer and driver's TLM port(s).
     */
-   extern function void connect_sequencer_and_driver();
+   extern virtual function void connect_sequencer_and_driver();
    
    /**
     * Connects agent's TLM ports to driver's and monitor's.
     */
-   extern function void connect_analysis_ports();
+   extern virtual function void connect_analysis_ports();
    
    /**
     * Connects coverage model to monitor and driver's analysis ports.
     */
-   extern function void connect_cov_model();
+   extern virtual function void connect_cov_model();
    
    /**
     * Connects transaction loggers to monitor and driver's analysis ports.
     */
-   extern function void connect_trn_loggers();
+   extern virtual function void connect_trn_loggers();
    
 endclass : uvma_rvvi_agent_c
 
@@ -149,14 +150,6 @@ function void uvma_rvvi_agent_c::connect_phase(uvm_phase phase);
 endfunction: connect_phase
 
 task uvma_rvvi_agent_c::run_phase(uvm_phase phase);
-   if (cfg.is_active == UVM_ACTIVE) begin
-      uvma_rvvi_control_seq_c#(ILEN,XLEN) control_seq = uvma_rvvi_control_seq_c#(ILEN, XLEN)::type_id::create("control_seq");
-
-      `uvm_info("RVVIAGT", "Starting the RVVI control sequence...", UVM_LOW);
-      fork
-         control_seq.start(sequencer);
-      join_none
-   end
 
 endtask : run_phase
 
@@ -178,7 +171,7 @@ function void uvma_rvvi_agent_c::get_and_set_cntxt();
    
    void'(uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::get(this, "", "cntxt", cntxt));
    if (!cntxt) begin
-      `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
+      `uvm_info("CNTXT", "Context handle is null; creating.", UVM_LOW)
       cntxt = uvma_rvvi_cntxt_c#(ILEN,XLEN)::type_id::create("cntxt");
    end
    uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::set(this, "*", "cntxt", cntxt);
@@ -207,6 +200,7 @@ function void uvma_rvvi_agent_c::retrieve_vif();
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
                                  $typename(cntxt.control_vif)), UVM_DEBUG)
    end
+
 endfunction : retrieve_vif
 
 
@@ -216,7 +210,6 @@ function void uvma_rvvi_agent_c::create_components();
    mon_trn_logger  = uvma_rvvi_mon_trn_logger_c#(ILEN,XLEN)::type_id::create("mon_trn_logger" , this);
    
    if (cfg.is_active == UVM_ACTIVE) begin
-      driver = uvma_rvvi_drv_c#(ILEN,XLEN)::type_id::create("driver", this);
       sequencer = uvma_rvvi_sqr_c#(ILEN,XLEN)::type_id::create("sequencer", this);
    end
 endfunction : create_components

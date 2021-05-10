@@ -82,7 +82,7 @@ function uvme_cv32e40x_cntxt_c::new(string name="uvme_cv32e40x_cntxt");
    obi_instr_cntxt = uvma_obi_cntxt_c::type_id::create("obi_instr_cntxt");
    obi_data_cntxt  = uvma_obi_cntxt_c::type_id::create("obi_data_cntxt");
    rvfi_cntxt = uvma_rvfi_cntxt_c#(ILEN,XLEN)::type_id::create("rvfi_cntxt");
-   rvvi_cntxt = uvma_rvvi_cntxt_c#(ILEN,XLEN)::type_id::create("rvvi_cntxt");
+   rvvi_cntxt = uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)::type_id::create("rvvi_cntxt");
 
    sample_cfg_e   = new("sample_cfg_e"  );
    sample_cntxt_e = new("sample_cntxt_e");

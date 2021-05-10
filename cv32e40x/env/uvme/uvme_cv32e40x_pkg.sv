@@ -45,6 +45,7 @@ package uvme_cv32e40x_pkg;
    import uvma_obi_pkg::*;
    import uvma_rvfi_pkg::*;
    import uvma_rvvi_pkg::*; 
+   import uvma_rvvi_ovpsim_pkg::*; 
    
    // Constants / Structs / Enums
    `include "uvme_cv32e40x_constants.sv"

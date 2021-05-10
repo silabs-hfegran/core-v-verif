@@ -125,7 +125,9 @@ module uvmt_cv32e40x_tb;
                                                                    .rvfi_mem_rdata(rvfi_i.rvfi_mem_rdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
                                                                    .rvfi_mem_rmask(rvfi_i.rvfi_mem_rmask[uvme_cv32e40x_pkg::XLEN/8*0+:uvme_cv32e40x_pkg::XLEN/8]),
                                                                    .rvfi_mem_wdata(rvfi_i.rvfi_mem_wdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
-                                                                   .rvfi_mem_wmask(rvfi_i.rvfi_mem_wmask[uvme_cv32e40x_pkg::XLEN/8*0+:uvme_cv32e40x_pkg::XLEN/8])
+                                                                   .rvfi_mem_wmask(rvfi_i.rvfi_mem_wmask[uvme_cv32e40x_pkg::XLEN/8*0+:uvme_cv32e40x_pkg::XLEN/8]),
+                                                                   .csr_mcause(core_i.cs_registers_i.mcause_q),
+                                                                   .csr_mip(core_i.cs_registers_i.mip)
                                                                    );
 
   // Bind in OBI interfaces (montioring only supported currently)
@@ -363,16 +365,22 @@ bind cv32e40x_wrapper
         end
       end
 
+      bit use_rvvi = 0;
+      initial begin
+        if ($test$plusargs("USE_RVVI"))
+          use_rvvi = 1;
+      end
+
       /**
        * When the ID stage commits, we set deferint to the ISS to signal to look at the interrrupts
        */
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if_iss.reset_n) begin
-          iss_wrap.b1.deferint <= 1'b1;
+          if (!use_rvvi) iss_wrap.b1.deferint <= 1'b1;
           deferint_ack <= 1'b1;
         end
         else if (id_start && !step_compare_if.deferint_prime) begin
-          iss_wrap.b1.deferint <= 1'b0;
+          if (!use_rvvi) iss_wrap.b1.deferint <= 1'b0;
           deferint_ack <= step_compare_if.deferint_prime_ack;
         end
       end
@@ -382,7 +390,7 @@ bind cv32e40x_wrapper
         */
       always @(negedge step_compare_if.ovp_cpu_state_stepi) begin
         if (iss_wrap.b1.deferint == 0) begin
-          iss_wrap.b1.deferint <= 1'b1;          
+          if (!use_rvvi) iss_wrap.b1.deferint <= 1'b1;          
           deferint_ack <= 1'b1;
           irq_deferint_ack <= '0;          
         end
@@ -408,9 +416,11 @@ bind cv32e40x_wrapper
       end
 
       always @*        
-        iss_wrap.b1.irq_i = iss_wrap.b1.deferint ? dut_wrap.irq :
-                            !deferint_ack ? irq_deferint_ack :
-                            irq_deferint_sleep;
+        if (!use_rvvi) begin
+          iss_wrap.b1.irq_i = iss_wrap.b1.deferint ? dut_wrap.irq :
+                              !deferint_ack ? irq_deferint_ack :
+                              irq_deferint_sleep;
+        end
 
       /**
        * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)
@@ -533,6 +543,7 @@ bind cv32e40x_wrapper
                                         .XLEN(uvme_cv32e40x_pkg::XLEN)
                                         ))::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("state_vif"), .value(iss_wrap.cpu.state));
      uvm_config_db#(virtual RVVI_control                )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("control_vif"), .value(iss_wrap.cpu.control));
+     uvm_config_db#(virtual BUS                         )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("ovpsim_bus_vif"), .value(iss_wrap.b1));
      uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
      uvm_config_db#(virtual uvmt_cv32e40x_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );
      uvm_config_db#(virtual uvmt_cv32e40x_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );     

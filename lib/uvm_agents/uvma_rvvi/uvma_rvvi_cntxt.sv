@@ -31,12 +31,12 @@ class uvma_rvvi_cntxt_c#(int ILEN=DEFAULT_ILEN,
 
    // Control RVVI interface   
    virtual RVVI_control            control_vif;
-      
+
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;
    
-   `uvm_object_utils_begin(uvma_rvvi_cntxt_c)
+   `uvm_object_param_utils_begin(uvma_rvvi_cntxt_c)
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
    `uvm_object_utils_end

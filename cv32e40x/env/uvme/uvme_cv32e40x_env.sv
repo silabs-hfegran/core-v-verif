@@ -183,13 +183,18 @@ function void uvme_cv32e40x_env_c::connect_phase(uvm_phase phase);
    
    if (cfg.enabled) begin      
       if (cfg.rvvi_cfg.is_active == UVM_ACTIVE) begin
+         uvma_rvvi_ovpsim_agent_c rvvi_ovpsim_agent;
+
          connect_rvfi_rvvi();
-         rvvi_agent.driver.clknrst_sequencer = clknrst_agent.sequencer;
+         if (!$cast(rvvi_ovpsim_agent, rvvi_agent)) begin
+            `uvm_fatal("UVMECV32E40XENV", "Could not cast agent to rvvi_ovpsim_agent");
+         end
+         rvvi_ovpsim_agent.set_clknrst_sequencer(clknrst_agent.sequencer);
       end
 
       if (cfg.scoreboarding_enabled) begin
          connect_predictor ();
-         connect_scoreboard();      
+         connect_scoreboard();
       end
       
       if (cfg.is_active) begin         
@@ -237,7 +242,7 @@ function void uvme_cv32e40x_env_c::assign_cntxt();
    uvm_config_db#(uvma_obi_cntxt_c)::set(this, "obi_instr_agent", "cntxt", cntxt.obi_instr_cntxt);
    uvm_config_db#(uvma_obi_cntxt_c)::set(this, "obi_data_agent", "cntxt", cntxt.obi_data_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
-   uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cntxt", cntxt.rvvi_cntxt);
+   uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cntxt", cntxt.rvvi_cntxt);
    
 endfunction: assign_cntxt
 
@@ -251,7 +256,7 @@ function void uvme_cv32e40x_env_c::create_agents();
    obi_instr_agent = uvma_obi_agent_c::type_id::create("obi_instr_agent", this);
    obi_data_agent  = uvma_obi_agent_c::type_id::create("obi_data_agent", this);
    rvfi_agent = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
-   rvvi_agent = uvma_rvvi_agent_c#(ILEN,XLEN)::type_id::create("rvvi_agent", this);
+   rvvi_agent = uvma_rvvi_ovpsim_agent_c#(ILEN,XLEN)::type_id::create("rvvi_agent", this);
 
 endfunction: create_agents
 

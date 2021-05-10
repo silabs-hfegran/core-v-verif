@@ -62,7 +62,10 @@ interface uvma_rvfi_instr_if
     input [XLEN-1:0]           rvfi_mem_rdata,
     input [XLEN/8-1:0]         rvfi_mem_rmask,
     input [XLEN-1:0]           rvfi_mem_wdata,
-    input [XLEN/8-1:0]         rvfi_mem_wmask
+    input [XLEN/8-1:0]         rvfi_mem_wmask,
+
+    input [ILEN-1:0] csr_mcause,
+    input [ILEN-1:0] csr_mip
   );
 
   // -------------------------------------------------------------------
@@ -113,7 +116,10 @@ interface uvma_rvfi_instr_if
         rvfi_mem_rdata,
         rvfi_mem_rmask,
         rvfi_mem_wdata,
-        rvfi_mem_wmask;
+        rvfi_mem_wmask,
+
+        csr_mip,
+        csr_mcause;
   endclocking : mon_cb
 
   modport passive_mp    (clocking mon_cb);

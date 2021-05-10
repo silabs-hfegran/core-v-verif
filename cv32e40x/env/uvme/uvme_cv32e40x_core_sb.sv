@@ -20,10 +20,8 @@
 `uvm_analysis_imp_decl(_core_sb_rvfi_instr)
 `uvm_analysis_imp_decl(_core_sb_rvvi_state)
 
-class uvme_cv32e40x_core_sb_c extends uvm_scoreboard;
+class uvme_cv32e40x_core_sb_c extends uvm_scoreboard;   
    
-   // Local parameters
-
    // Fail-safe to kill the test with fatal error if the reorder queue gets to a certain size
    localparam RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT = 16;
 
@@ -228,12 +226,16 @@ function void uvme_cv32e40x_core_sb_c::write_core_sb_rvvi_state(uvma_rvvi_state_
       return;
 
    // Validate against expected order
-   if (rvvi_state.order != next_rvvi_order) begin
-      `uvm_error("CORESB", $sformatf("Received RVVI out of order: %0d, exp_order, %0d\n%s",
-                                     rvvi_state.order, next_rvvi_order, rvvi_state.convert2string()));
-      return;                                     
+   // FIXME:strichmo:Currently the OVPSim RVVI will incrmeent order for the "interrupt" intruction
+   // This should be fixed in OVPSIM
+   if (!cfg.temp_skip_check_rvvi_order) begin
+      if (rvvi_state.order != next_rvvi_order) begin
+         `uvm_error("CORESB", $sformatf("Received RVVI out of order: %0d, exp_order, %0d\n%s",
+                                       rvvi_state.order, next_rvvi_order, rvvi_state.convert2string()));
+         return;                                     
+      end
+      next_rvvi_order++;
    end
-   next_rvvi_order++;
 
    rvvi_state_q.push_back(rvvi_state);
 
@@ -261,6 +263,7 @@ function void uvme_cv32e40x_core_sb_c::check_instr(uvma_rvfi_instr_seq_item_c#(I
                                   pc_checked_cnt, rvfi_instr_q.size(), rvvi_state_q.size()), UVM_HIGH);
    pc_checked_cnt++;
    
+   
    // CHECK: PC
    if (rvfi_instr.pc_rdata != rvvi_state.pc) begin
       `uvm_error("CORESB", $sformatf("PC Mismatch, order: %0d, rvfi.pc = 0x%08x, rvvi.pc = 0x%08x", 
@@ -271,6 +274,11 @@ function void uvme_cv32e40x_core_sb_c::check_instr(uvma_rvfi_instr_seq_item_c#(I
    if (rvfi_instr.insn != rvvi_state.insn) begin
       `uvm_error("CORESB", $sformatf("INSN Mismatch, order: %0d, rvfi.insn = 0x%08x, rvvi.insn = 0x%08x", 
                                      rvfi_instr.order, rvfi_instr.insn, rvvi_state.insn));
+   end
+
+   // Heartbeat message
+   if (pc_checked_cnt && ((pc_checked_cnt % PC_CHECKED_HEARTBEAT)== 0)) begin
+      `uvm_info("CORE_SB", $sformatf("Compared %0d instructions", pc_checked_cnt), UVM_LOW);
    end
 endfunction : check_instr
 

@@ -136,7 +136,7 @@ task uvma_rvvi_state_mon_c::monitor_rvvi_state();
    while(1) begin
       uvma_rvvi_state_seq_item_c#(ILEN,XLEN) mon_trn;
 
-      @(cntxt.state_vif.notify);
+      @(cntxt.state_vif.notify);      
 
       mon_trn = uvma_rvvi_state_seq_item_c#(ILEN,XLEN)::type_id::create("rvvi_state_mon_trn");
       

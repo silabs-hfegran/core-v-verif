@@ -21,11 +21,9 @@
 /**
  * Sequence which implements
  */
-class uvma_rvvi_control_seq_c#(int ILEN=DEFAULT_ILEN,
-                               int XLEN=DEFAULT_XLEN) extends uvma_rvvi_base_seq_c#(ILEN,XLEN);
-   
-   
-   `uvm_object_param_utils(uvma_rvvi_control_seq_c#(ILEN,XLEN))
+virtual class uvma_rvvi_control_seq_c#(int ILEN=DEFAULT_ILEN,
+                                       int XLEN=DEFAULT_XLEN) extends uvma_rvvi_base_seq_c#(ILEN,XLEN);   
+      
    `uvm_declare_p_sequencer(uvma_rvvi_sqr_c#(ILEN,XLEN))
       
    /**
@@ -41,7 +39,7 @@ class uvma_rvvi_control_seq_c#(int ILEN=DEFAULT_ILEN,
    /**
     * Step the reference model
     */
-   extern virtual task step_rm();
+   pure virtual task step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr);
 
 endclass : uvma_rvvi_control_seq_c
 
@@ -62,20 +60,8 @@ task uvma_rvvi_control_seq_c::body();
       `uvm_info("CONTROL", $sformatf("Received RVFI: %0d", last_rvfi_instr.order), UVM_DEBUG);
 
       // Always step the RM
-      step_rm();
+      step_rm(last_rvfi_instr);
    end
 endtask : body
-
-task uvma_rvvi_control_seq_c::step_rm();
-   // Send sequence item to step the RM
-   uvma_rvvi_control_seq_item_c#(ILEN,XLEN) step_rm_seq;
-
-   step_rm_seq = uvma_rvvi_control_seq_item_c#(ILEN,XLEN)::type_id::create("step_rm_seq");
-   start_item(step_rm_seq);
-   assert(step_rm_seq.randomize() with {
-      action == UVMA_RVVI_STEPI;
-   });
-   finish_item(step_rm_seq);
-endtask : step_rm
 
 `endif // __UVMA_RVVI_CONTROL_SEQ_SV__

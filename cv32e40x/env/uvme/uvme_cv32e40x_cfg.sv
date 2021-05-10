@@ -28,6 +28,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    // Status of plusarg to control testbench features
    bit                           use_iss  = 0;
    bit                           use_rvvi = 0;
+   bit                           temp_skip_check_rvvi_order = 0;
 
    // Integrals
    rand bit                      enabled;
@@ -154,6 +155,9 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    if ($test$plusargs("USE_RVVI")) 
       use_rvvi = 1;
    
+   if ($test$plusargs("SKIP_CHECK_RVVI_ORDER"))
+      temp_skip_check_rvvi_order = 1;
+   
    isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    interrupt_cfg = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
@@ -161,7 +165,7 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    obi_instr_cfg = uvma_obi_cfg_c::type_id::create("obi_instr_cfg");
    obi_data_cfg  = uvma_obi_cfg_c::type_id::create("obi_data_cfg");
    rvfi_cfg = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
-   rvvi_cfg = uvma_rvvi_cfg_c#(ILEN,XLEN)::type_id::create("rvvi_cfg");
+   rvvi_cfg = uvma_rvvi_ovpsim_cfg_c#(ILEN,XLEN)::type_id::create("rvvi_cfg");
 endfunction : new
 
 function void uvme_cv32e40x_cfg_c::post_randomize();
