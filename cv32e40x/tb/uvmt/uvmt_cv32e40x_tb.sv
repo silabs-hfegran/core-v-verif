@@ -287,7 +287,11 @@ bind cv32e40x_wrapper
 
     uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
-    //uvmt_cv32e40x_rvvi_handcar u_rvvi_handcar();
+    uvmt_cv32e40x_rvvi_handcar u_rvvi_handcar(
+                                                .clknrst_if(clknrst_if_iss),
+                                                .isa_covg_if(isa_covg_if)
+                                             );
+
     /**
     * ISS WRAPPER instance:
     */   
@@ -305,6 +309,7 @@ bind cv32e40x_wrapper
       */
       uvmt_cv32e40x_step_compare step_compare (.clknrst_if(clknrst_if),
                                                .step_compare_if(step_compare_if) );
+
 
       always @(dut_wrap.cv32e40x_wrapper_i.tracer_i.retire) -> step_compare_if.riscv_retire;
       assign step_compare_if.insn_pc   = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_pc;
@@ -337,8 +342,8 @@ bind cv32e40x_wrapper
 
       // Advance acknowledged interrupt to ISS when next valid instruction decode executes
       // Ignoring any instructon decodes in debug mode
-      wire id_start = dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o &
-                      dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding  &
+      wire id_start =  dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o &
+                       dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding  &
                       ~dut_wrap.cv32e40x_wrapper_i.core_i.debug_mode;
 
       assign irq_enabled = dut_wrap.cv32e40x_wrapper_i.irq_i & dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_n;
@@ -456,9 +461,9 @@ bind cv32e40x_wrapper
             count_issue <= 32'h0;
         end else begin
             if ((dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding &&
-               !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i) ||
+                !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i) ||
                 (dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding && dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ebrk_insn_i &&
-                 !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.debug_trigger_match_i &&
+                !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.debug_trigger_match_i &&
                 (dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ebrk_force_debug_mode || dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q))) begin
                 count_issue <= count_issue + 1;
             end
@@ -532,29 +537,33 @@ bind cv32e40x_wrapper
      $timeformat(-9, 3, " ns", 8);
       
      // Add interfaces handles to uvm_config_db
-     uvm_config_db#(virtual uvma_isacov_if              )::set(.cntxt(null), .inst_name("*.env.isacov_agent"), .field_name("vif"), .value(isacov_if));
-     uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"), .value(debug_if));
-     uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),        .value(clknrst_if));
-     uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
-     uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_instr_if_i));
-     uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
-     uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
      uvm_config_db#(virtual RVVI_state#(.ILEN(uvme_cv32e40x_pkg::ILEN),
-                                        .XLEN(uvme_cv32e40x_pkg::XLEN)
-                                        ))::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("state_vif"), .value(iss_wrap.cpu.state));
-     uvm_config_db#(virtual RVVI_control                )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("control_vif"), .value(iss_wrap.cpu.control));
-     uvm_config_db#(virtual BUS                         )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("ovpsim_bus_vif"), .value(iss_wrap.b1));
-     uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
-     uvm_config_db#(virtual uvmt_cv32e40x_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );
-     uvm_config_db#(virtual uvmt_cv32e40x_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );     
-     uvm_config_db#(virtual uvmt_cv32e40x_step_compare_if   )::set(.cntxt(null), .inst_name("*"), .field_name("step_compare_vif"),    .value(step_compare_if));
-     uvm_config_db#(virtual uvmt_cv32e40x_isa_covg_if       )::set(.cntxt(null), .inst_name("*"), .field_name("isa_covg_vif"),        .value(isa_covg_if));
+                                        .XLEN(uvme_cv32e40x_pkg::XLEN))
+                                                             )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("state_vif"), .value(iss_wrap.cpu.state));
+     uvm_config_db#(virtual RVVI_state#(.ILEN(uvme_cv32e40x_pkg::ILEN),
+                                        .XLEN(uvme_cv32e40x_pkg::XLEN))
+                                                             )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("state_vif"), .value(u_rvvi_handcar.state_if));
+     uvm_config_db#(virtual RVVI_control                     )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("control_vif"), .value(iss_wrap.cpu.control));
+     uvm_config_db#(virtual RVVI_control                     )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("control_vif"), .value(u_rvvi_handcar.control_if));
+     uvm_config_db#(virtual uvma_isacov_if                   )::set(.cntxt(null), .inst_name("*.env.isacov_agent"), .field_name("vif"), .value(isacov_if));
+     uvm_config_db#(virtual uvma_debug_if                    )::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"), .value(debug_if));
+     uvm_config_db#(virtual uvma_clknrst_if                  )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),        .value(clknrst_if));
+     uvm_config_db#(virtual uvma_interrupt_if                )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
+     uvm_config_db#(virtual uvma_obi_if                      )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_instr_if_i));
+     uvm_config_db#(virtual uvma_obi_if                      )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
+     uvm_config_db#(virtual uvma_rvfi_instr_if               )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
+     uvm_config_db#(virtual BUS                              )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("ovpsim_bus_vif"), .value(iss_wrap.b1));
+     uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if       )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
+     uvm_config_db#(virtual uvmt_cv32e40x_core_cntrl_if      )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );
+     uvm_config_db#(virtual uvmt_cv32e40x_core_status_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );     
+     uvm_config_db#(virtual uvmt_cv32e40x_step_compare_if    )::set(.cntxt(null), .inst_name("*"), .field_name("step_compare_vif"),    .value(step_compare_if));
+     uvm_config_db#(virtual uvmt_cv32e40x_isa_covg_if        )::set(.cntxt(null), .inst_name("*"), .field_name("isa_covg_vif"),        .value(isa_covg_if));
      uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"), .field_name("debug_cov_vif"),.value(debug_cov_assert_if));
       
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
-     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value(1'b0)        );
-     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tf"),     .value(1'b0)        );
-     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("evalid"), .value(1'b0)        );
+     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value( 1'b0)       );
+     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tf"),     .value( 1'b0)       );
+     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("evalid"), .value( 1'b0)       );
      uvm_config_db#(bit[31:0])::set(.cntxt(null), .inst_name("*"), .field_name("evalue"), .value(32'h00000000));
 
 	 // DUT and ENV parameters

@@ -27,6 +27,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
 
    // Status of plusarg to control testbench features
    bit                           use_iss  = 0;
+   bit                           use_handcar = 0;
    bit                           use_rvvi = 0;
    bit                           temp_skip_check_rvvi_order = 0;
 
@@ -77,8 +78,9 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    }
    
    constraint scoreboard_cons {
-      (!(use_iss && use_rvvi)) -> (scoreboarding_enabled == 0);
+      (!(use_iss || use_handcar) && !(use_rvvi)) -> (scoreboarding_enabled == 0);
    }
+
    constraint agent_cfg_cons {
       if (enabled) {
          clknrst_cfg.enabled   == 1;
@@ -154,6 +156,9 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
 
    if ($test$plusargs("USE_RVVI")) 
       use_rvvi = 1;
+
+   if ($test$plusargs("USE_HANDCAR"))
+      use_handcar = 1;
    
    if ($test$plusargs("SKIP_CHECK_RVVI_ORDER"))
       temp_skip_check_rvvi_order = 1;

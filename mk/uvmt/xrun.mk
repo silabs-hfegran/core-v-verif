@@ -56,7 +56,9 @@ XRUN_ELAB_COV     = -covdut uvmt_$(CV_CORE_LC)_tb -coverage b:e:f:u
 XRUN_ELAB_COVFILE = -covfile $(abspath $(MAKE_PATH)/../tools/xrun/covfile.tcl)
 XRUN_RUN_COV      = -covscope uvmt_$(CV_CORE_LC)_tb \
 					-nowarn CGDEFN
-XRUN_RUN_BASE_FLAGS += -sv_lib $(DPI_DASM_LIB)
+XRUN_RUN_BASE_FLAGS += -sv_lib $(DPI_DASM_LIB) \
+											 -sv_lib $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/force_riscv/utils/handcar/handcar_cosim.so \
+											 -sv_lib $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/force_hack/force_hack.so
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
 DPI_INCLUDE        ?= $(shell dirname $(shell which xrun))/../include
@@ -163,6 +165,9 @@ ifeq ($(call IS_YES,$(USE_ISS)),YES)
 endif
 ifeq ($(call IS_YES,$(USE_RVVI)),YES)
     XRUN_PLUSARGS +="+USE_RVVI"
+endif
+ifeq ($(call IS_YES,$(USE_HANDCAR)),YES)
+    XRUN_PLUSARGS +="+USE_HANDCAR"
 endif
 
 # Simulate using latest elab
