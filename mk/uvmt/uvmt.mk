@@ -135,6 +135,10 @@ DPI_DASM_SPIKE_PKG := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/dpi_dasm_spike
 export DPI_DASM_ROOT       = $(DPI_DASM_PKG)
 export DPI_DASM_SPIKE_ROOT = $(DPI_DASM_SPIKE_PKG)
 
+# Handcar
+HANDCAR_PKG			 := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/force-riscv
+HANDCAR_HACK_PKG := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/force_hack
+
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt/uvmt_$(CV_CORE_LC)_tb.sv
 TBSRC_HOME  := $(CORE_V_VERIF)/$(CV_CORE_LC)/tb

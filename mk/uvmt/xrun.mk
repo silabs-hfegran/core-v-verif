@@ -57,8 +57,8 @@ XRUN_ELAB_COVFILE = -covfile $(abspath $(MAKE_PATH)/../tools/xrun/covfile.tcl)
 XRUN_RUN_COV      = -covscope uvmt_$(CV_CORE_LC)_tb \
 					-nowarn CGDEFN
 XRUN_RUN_BASE_FLAGS += -sv_lib $(DPI_DASM_LIB) \
-											 -sv_lib $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/force_riscv/utils/handcar/handcar_cosim.so \
-											 -sv_lib $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/force_hack/force_hack.so
+											 -sv_lib $(HANDCAR_PKG)/utils/handcar/handcar_cosim.so \
+											 -sv_lib $(HANDCAR_HACK_PKG)/force_hack.so
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
 DPI_INCLUDE        ?= $(shell dirname $(shell which xrun))/../include

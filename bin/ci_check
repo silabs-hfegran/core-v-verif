@@ -80,6 +80,8 @@ parser.add_argument("-k", "--keep",          help="Keep previous cloned or gener
 parser.add_argument("-v", "--verilator",     help="Run Verilator on the CORE testbench",              action="store_true")
 parser.add_argument("-u", "--no_uvm",        help="DO NOT run CI regression on the UVM testbench",    action="store_true")
 parser.add_argument('--iss',                 help='Force USE_ISS flag to each test run (use 0 or 1), default: Enabled')
+parser.add_argument('--handcar',             help='Force USE_HANDCAR flag to each test run (use 0 or 1), default: Disabled')
+parser.add_argument('--rvvi',                help='Force USE_RVVI flag to each test run (use 0 or 1), default: Disabled')
 parser.add_argument("--repo",                help="Use this repo for the RTL, not one in Makefile",   type=str)
 parser.add_argument("--branch",              help="Use this branch for the RTL, not one in Makefile", type=str)
 parser.add_argument("--hash",                help="Use this hash for the RTL, not one in Makefile",   type=str)
@@ -357,6 +359,22 @@ if (uvm):
                         except KeyError:
                             iss = 1
 
+                    if args.handcar != None:
+                        handcar = int(args.handcar)
+                    else:
+                        try:
+                            handcar = key['handcar']
+                        except KeyError:
+                            handcar = 0
+
+                    if args.rvvi != None:
+                        rvvi = int(args.rvvi)
+                    else:
+                        try:
+                            rvvi = key['rvvi']
+                        except KeyError:
+                            rvvi = 0
+
                     for n in range(num):                    
                         # Add directory
                         full_run_cmd = 'cd {}; {}'.format(key['dir'], run_cmd)
@@ -366,6 +384,10 @@ if (uvm):
                         full_run_cmd += ' GEN_START_INDEX={} RUN_INDEX={}'.format(n, n)
                         # Add ISS
                         full_run_cmd += ' USE_ISS={}'.format('YES' if iss else 'NO')
+                        # Add Handcar
+                        full_run_cmd += ' USE_HANDCAR={}'.format('YES' if handcar else 'NO')
+                        # Add RVVI
+                        full_run_cmd += ' USE_RVVI={}'.format('YES' if rvvi else 'NO')
 
                         # Only DSIM can run corev-dv (riscv-dv) at present
                         if ( svtool == 'dsim' or svtool == 'xrun' or svtool == 'vsim' or svtool == 'riviera' or svtool == 'vcs'):
