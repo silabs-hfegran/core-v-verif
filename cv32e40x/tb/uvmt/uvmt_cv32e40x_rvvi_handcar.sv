@@ -1,5 +1,6 @@
 import "DPI-C" initialize_simulator        = function void handcar_initialize_simulator(input string options);
 import "DPI-C" terminate_simulator         = function void handcar_terminate_simulator();
+import "DPI-C" set_simulator_parameter     = function int  handcar_set_sim_params(input string, inout longint unsigned value, input string);
 import "DPI-C" simulator_load_elf          = function int  handcar_simulator_load_elf(input int target_id, input string elf_path);
 import "DPI-C" step_simulator              = function int  handcar_step_simulator(input int target_id, input int num_steps, input int stx_failed);
 import "DPI-C" read_simulator_register     = function int  handcar_read_simulator_register(input int target_id, input string reg_name, output bit [127:0] reg_data, input int length);
@@ -55,6 +56,36 @@ module uvmt_cv32e40x_rvvi_handcar(
   endfunction : check_err
 
   //
+  // Set simulator parameters
+  //
+  function void set_sim_parameters;
+    string nullstring;
+    int unsigned nullvar = 0;
+
+    string param_1 = "p";
+    longint unsigned pval_1  = 1;
+    string param_2 = "hartids";
+    string pval_2  = "0";
+    string param_3 = "isa";
+    string pval_3  = "RV32IMC";
+    string param_4 = "priv";
+    string pval_4  = "M";
+    string param_5 = "disable-dtb";
+
+
+    retval = handcar_set_sim_params(param_1, pval_1, nullstring);
+    check_err("Unable to set \"-p 1\"", retval);
+    retval = handcar_set_sim_params(param_2, nullvar, pval_2);
+    check_err("Unable to set \"--hartids=0\"", retval);
+    retval = handcar_set_sim_params(param_3, nullvar, pval_3);
+    check_err("Unable to set \"--isa=RV32IMC\"", retval);
+    retval = handcar_set_sim_params(param_4, nullvar, pval_4);
+    check_err("Unable to set \"--priv=M\"", retval);
+    retval = handcar_set_sim_params(param_5, nullvar, nullstring);
+    check_err("Unable to set \"--priv=M\"", retval);
+  endfunction : set_sim_parameters
+
+  //
   // Load elf program into handcar
   //
   string elf_file;
@@ -80,8 +111,8 @@ module uvmt_cv32e40x_rvvi_handcar(
   // Get numbered GPR register
   //
   function automatic bit[31:0] get_reg(string reg_name);
-    bit[63:0] x;
-    retval = handcar_read_simulator_register(0, reg_name, x, 4);
+    bit[63:0] x = 0;
+    retval = handcar_read_simulator_register(0, reg_name, x, 8);
     check_err($sformatf("Could not read %0s register", reg_name), retval);
     return x;
   endfunction : get_reg
@@ -193,7 +224,10 @@ module uvmt_cv32e40x_rvvi_handcar(
   // Initialization
   //
   initial begin
+    handcar_terminate_simulator();
+    set_sim_parameters();
     handcar_initialize_simulator("-p1 --hartids=0 --isa=RV32IMC --priv=m --disable-dtb");
+    //handcar_initialize_simulator("");
     load_elf;
     set_reg("pc", 32'h80);
     `uvm_info(info_tag, "Initialized Handcar cosim", UVM_LOW);
